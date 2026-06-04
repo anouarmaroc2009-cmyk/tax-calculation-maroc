@@ -12,6 +12,7 @@ export default function TVAPage() {
   });
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
 
   const updSale = (i: number, k: string, v: any) => {
     const copy = [...form.sales]; copy[i] = { ...copy[i], [k]: v }; setForm(f => ({ ...f, sales: copy }));
@@ -20,86 +21,170 @@ export default function TVAPage() {
     const copy = [...form.purchases]; copy[i] = { ...copy[i], [k]: v }; setForm(f => ({ ...f, purchases: copy }));
   };
 
-  const rateOptions = ['STANDARD', 'REDUCED_ADD', 'REDUCED_SDD', 'EXEMPT_SDD'];
-  const purchRateOptions = ['STANDARD', 'REDUCED_ADD', 'EXEMPT_SDD'];
+  const rateOptions = [
+    { value: 'STANDARD', label: '20% (Standard)' },
+    { value: 'REDUCED_ADD', label: '10% (Réduit additionnel)' },
+    { value: 'REDUCED_SDD', label: '0% (Export/SDD)' },
+    { value: 'EXEMPT_SDD', label: 'Exonéré' },
+  ];
+  const purchRateOptions = [
+    { value: 'STANDARD', label: '20% (Déductible)' },
+    { value: 'REDUCED_ADD', label: '10% (Déductible)' },
+    { value: 'EXEMPT_SDD', label: 'Non déductible' },
+  ];
 
   async function calc() {
-    setLoading(true);
+    setLoading(true); setErr('');
     try { const res = await api.tva.calculate(form); setResult(res); }
-    catch (e) { console.error(e); }
+    catch (e: any) { setErr(e.message); }
     finally { setLoading(false); }
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <h1 className="text-2xl font-bold mb-2">VAT (TVA) Calculator</h1>
-      <p className="text-sm text-gray-500 mb-6">Post-2026 reform — 20% / 10% rates</p>
-
-      <div className="grid grid-cols-2 gap-6 mb-6">
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div className="flex items-center gap-4 mb-2">
+        <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-2xl">📊</div>
         <div>
-          <h2 className="font-semibold text-sm mb-2">Sales (HT — MAD)</h2>
-          {form.sales.map((s, i) => (
-            <div key={i} className="flex gap-2 mb-1">
-              <input type="number" value={s.ht} onChange={e => updSale(i, 'ht', +e.target.value)}
-                className="flex-1 border rounded p-1 text-sm" placeholder="Amount" />
-              <select value={s.rateCode} onChange={e => updSale(i, 'rateCode', e.target.value)}
-                className="w-32 border rounded p-1 text-sm">
-                {rateOptions.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
+          <h1 className="text-2xl font-bold text-gray-900">Taxe sur la Valeur Ajoutée (TVA)</h1>
+          <p className="text-sm text-gray-500">Régime post-réforme 2026 — Taux 20% / 10%</p>
+        </div>
+      </div>
+
+      <div className="card p-6 space-y-5">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Période de déclaration</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="input-label">Type de période</label>
+            <select value={form.periodType} onChange={e => setForm(f => ({ ...f, periodType: e.target.value }))} className="select-field">
+              <option value="MONTHLY">Mensuelle</option>
+              <option value="QUARTERLY">Trimestrielle</option>
+            </select>
+          </div>
+          <div>
+            <label className="input-label">Période n°</label>
+            <input type="number" min={1} max={12} value={form.periodNumber} onChange={e => setForm(f => ({ ...f, periodNumber: +e.target.value }))} className="input-field" />
+          </div>
+          <div>
+            <label className="input-label">CA N-1 (pour déterminer fréquence)</label>
+            <div className="relative">
+              <input type="number" value={form.priorYearCA} onChange={e => setForm(f => ({ ...f, priorYearCA: +e.target.value }))} className="input-field pr-16" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
             </div>
-          ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Ventes</h2>
+            </div>
+            <span className="text-xs text-gray-400">HT</span>
+          </div>
+          <div className="space-y-2">
+            {form.sales.map((s, i) => (
+              <div key={i} className="flex gap-2">
+                <div className="relative flex-1">
+                  <input type="number" value={s.ht} onChange={e => updSale(i, 'ht', +e.target.value)} className="input-field pr-14" placeholder="Montant HT" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+                </div>
+                <select value={s.rateCode} onChange={e => updSale(i, 'rateCode', e.target.value)} className="select-field w-40">
+                  {rateOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
           <button onClick={() => setForm(f => ({ ...f, sales: [...f.sales, { ht: 0, rateCode: 'STANDARD' }] }))}
-            className="text-xs text-blue-600 mt-1">+ Add Sale</button>
+            className="text-xs font-medium text-purple-600 hover:text-purple-700">+ Ajouter une vente</button>
         </div>
 
-        <div>
-          <h2 className="font-semibold text-sm mb-2">Purchases (HT — MAD)</h2>
-          {form.purchases.map((p, i) => (
-            <div key={i} className="flex gap-2 mb-1">
-              <input type="number" value={p.ht} onChange={e => updPurch(i, 'ht', +e.target.value)}
-                className="flex-1 border rounded p-1 text-sm" placeholder="Amount" />
-              <select value={p.rateCode} onChange={e => updPurch(i, 'rateCode', e.target.value)}
-                className="w-32 border rounded p-1 text-sm">
-                {purchRateOptions.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Achats</h2>
             </div>
-          ))}
+            <span className="text-xs text-gray-400">HT</span>
+          </div>
+          <div className="space-y-2">
+            {form.purchases.map((p, i) => (
+              <div key={i} className="flex gap-2">
+                <div className="relative flex-1">
+                  <input type="number" value={p.ht} onChange={e => updPurch(i, 'ht', +e.target.value)} className="input-field pr-14" placeholder="Montant HT" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+                </div>
+                <select value={p.rateCode} onChange={e => updPurch(i, 'rateCode', e.target.value)} className="select-field w-40">
+                  {purchRateOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
           <button onClick={() => setForm(f => ({ ...f, purchases: [...f.purchases, { ht: 0, rateCode: 'STANDARD' }] }))}
-            className="text-xs text-blue-600 mt-1">+ Add Purchase</button>
+            className="text-xs font-medium text-purple-600 hover:text-purple-700">+ Ajouter un achat</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div><label className="text-xs font-medium">Prior Credit (MAD)</label>
-          <input type="number" value={form.priorCredit} onChange={e => setForm(f => ({ ...f, priorCredit: +e.target.value }))}
-            className="w-full border rounded p-2 text-sm" /></div>
-        <div><label className="text-xs font-medium">Prior Year CA (MAD) — determines filing frequency</label>
-          <input type="number" value={form.priorYearCA} onChange={e => setForm(f => ({ ...f, priorYearCA: +e.target.value }))}
-            className="w-full border rounded p-2 text-sm" /></div>
+      <div className="card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Crédit antérieur</h2>
+        </div>
+        <div className="relative max-w-xs">
+          <input type="number" value={form.priorCredit} onChange={e => setForm(f => ({ ...f, priorCredit: +e.target.value }))} className="input-field pr-16" placeholder="0" />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+        </div>
       </div>
 
-      <button onClick={calc} disabled={loading}
-        className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
-        {loading ? 'Calculating...' : 'Calculate TVA'}
+      <button onClick={calc} disabled={loading} className="btn-primary min-w-[160px]">
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            Calcul...
+          </span>
+        ) : 'Calculer TVA'}
       </button>
 
+      {err && (
+        <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+          <p className="text-sm text-red-700 flex items-center gap-2"><span>⚠️</span> {err}</p>
+        </div>
+      )}
+
       {result && (
-        <div className="mt-6 border rounded-lg bg-white p-6">
-          <h2 className="text-lg font-semibold mb-3">TVA Result</h2>
-          <table className="w-full text-sm">
+        <div className="card divide-y divide-gray-50 overflow-hidden">
+          <div className="p-5 flex items-center justify-between bg-gradient-to-r from-purple-50/50 to-transparent">
+            <h3 className="font-semibold text-gray-900">Résultat TVA</h3>
+            <div className="flex items-center gap-3">
+              <span className="badge-blue">{result.filingFrequency}</span>
+              <span className="text-xs text-gray-400">Échéance: {result.deadline}</span>
+            </div>
+          </div>
+          <table className="result-table">
             <tbody>
-              <tr className="border-b"><td>VAT Collected (20%)</td><td className="text-right font-mono">{result.vatCollected.standard.toLocaleString()} MAD</td></tr>
-              <tr className="border-b"><td>VAT Collected (10%)</td><td className="text-right font-mono">{result.vatCollected.reduced.toLocaleString()} MAD</td></tr>
-              <tr className="border-b"><td className="font-semibold">Total VAT Collected</td><td className="text-right font-mono font-semibold">{result.vatCollected.total.toLocaleString()} MAD</td></tr>
-              <tr className="border-b"><td>VAT Deductible</td><td className="text-right font-mono">({result.vatDeductible.toLocaleString()} MAD)</td></tr>
-              <tr className="border-b"><td>Prior Credit</td><td className="text-right font-mono">({result.priorCredit.toLocaleString()} MAD)</td></tr>
+              <tr><td>TVA collectée (20%)</td><td className="text-right font-mono">{result.vatCollected?.standard?.toLocaleString()} MAD</td></tr>
+              <tr><td>TVA collectée (10%)</td><td className="text-right font-mono">{result.vatCollected?.reduced?.toLocaleString()} MAD</td></tr>
+              <tr className="border-b-2 border-gray-100">
+                <td className="font-semibold">Total TVA collectée</td>
+                <td className="text-right font-semibold font-mono">{result.vatCollected?.total?.toLocaleString()} MAD</td>
+              </tr>
+              <tr><td>TVA déductible</td><td className="text-right font-mono text-red-600">(-{result.vatDeductible?.toLocaleString()} MAD)</td></tr>
+              <tr><td>Crédit antérieur</td><td className="text-right font-mono text-red-600">(-{result.priorCredit?.toLocaleString()} MAD)</td></tr>
               {result.vatPayable > 0 ? (
-                <tr className="font-bold"><td className="text-lg">VAT Payable</td><td className="text-right text-lg text-red-600">{result.vatPayable.toLocaleString()} MAD</td></tr>
+                <tr className="bg-red-50/50">
+                  <td className="font-bold text-lg text-gray-900">TVA à payer</td>
+                  <td className="text-right font-bold text-lg font-mono text-red-600">{result.vatPayable?.toLocaleString()} MAD</td>
+                </tr>
               ) : (
-                <tr className="font-bold text-green-600"><td className="text-lg">VAT Credit (to carry forward)</td><td className="text-right text-lg">{result.vatCredit.toLocaleString()} MAD</td></tr>
+                <tr className="bg-green-50/50">
+                  <td className="font-bold text-lg text-gray-900">Crédit de TVA (reportable)</td>
+                  <td className="text-right font-bold text-lg font-mono text-green-600">{result.vatCredit?.toLocaleString()} MAD</td>
+                </tr>
               )}
-              <tr><td>Filing Frequency</td><td className="text-right">{result.filingFrequency}</td></tr>
-              <tr><td>Deadline</td><td className="text-right">{result.deadline}</td></tr>
             </tbody>
           </table>
         </div>

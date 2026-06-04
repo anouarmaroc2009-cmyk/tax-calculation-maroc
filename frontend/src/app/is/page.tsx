@@ -11,6 +11,14 @@ interface Form {
   priorYearLosses: { originYear: number; type: string; remaining: number }[];
 }
 
+const companyTypes = [
+  { value: 'STANDARD', label: 'Standard', rate: '20% ou 35%' },
+  { value: 'CREDIT_INSTITUTION', label: 'Établissement de crédit / Assurance', rate: '40%' },
+  { value: 'CFC', label: 'CFC (Casablanca Finance City)', rate: '20%' },
+  { value: 'IAZ', label: 'IAZ (Zones d\'accélération industrielle)', rate: '20%' },
+  { value: 'INVESTMENT_AGREEMENT', label: 'Convention d\'investissement ≥ 1.5B', rate: '20%' },
+];
+
 export default function ISPage() {
   const [form, setForm] = useState<Form>({
     fiscalYear: 2026, companyType: 'STANDARD', netAccountingProfit: 500000, totalRevenue: 3000000,
@@ -31,124 +39,184 @@ export default function ISPage() {
     finally { setLoading(false); }
   }
 
-  const companyTypes = [
-    { value: 'STANDARD', label: 'Standard (20% or 35%)' },
-    { value: 'CREDIT_INSTITUTION', label: 'Credit Institution / Insurance (40%)' },
-    { value: 'CFC', label: 'CFC Company (20% flat)' },
-    { value: 'IAZ', label: 'IAZ Company (20% flat)' },
-    { value: 'INVESTMENT_AGREEMENT', label: 'Investment Agreement ≥ 1.5B (20%)' },
-  ];
-
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <h1 className="text-2xl font-bold mb-2">Corporate Income Tax (IS) Calculator</h1>
-      <p className="text-sm text-gray-500 mb-6">CGI Art. 19-I — 2026 final proportional rates</p>
-
-      <div className="grid grid-cols-3 gap-4 mb-4">
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div className="flex items-center gap-4 mb-2">
+        <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl">🏢</div>
         <div>
-          <label className="block text-xs font-medium text-gray-700">Company Type</label>
-          <select value={form.companyType} onChange={e => update('companyType', e.target.value)}
-            className="w-full border rounded p-2 text-sm mt-1">
-            {companyTypes.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700">Fiscal Year</label>
-          <input type="number" value={form.fiscalYear} onChange={e => update('fiscalYear', +e.target.value)}
-            className="w-full border rounded p-2 text-sm mt-1" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700">Months Since Startup (MC exemption: ≤ 36)</label>
-          <input type="number" value={form.operatingMonths} onChange={e => update('operatingMonths', +e.target.value)}
-            className="w-full border rounded p-2 text-sm mt-1" />
+          <h1 className="text-2xl font-bold text-gray-900">Impôt sur les Sociétés (IS)</h1>
+          <p className="text-sm text-gray-500">CGI Art. 19-I — Taux proportionnels 2026</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700">Net Accounting Profit (MAD)</label>
-          <input type="number" value={form.netAccountingProfit} onChange={e => update('netAccountingProfit', +e.target.value)}
-            className="w-full border rounded p-2 text-sm mt-1" />
+      <div className="card p-6 space-y-5">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Paramètres de l&apos;entreprise</h2>
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700">Total Revenue (MAD)</label>
-          <input type="number" value={form.totalRevenue} onChange={e => update('totalRevenue', +e.target.value)}
-            className="w-full border rounded p-2 text-sm mt-1" />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700">Financial Income (MAD)</label>
-          <input type="number" value={form.financialIncome} onChange={e => update('financialIncome', +e.target.value)}
-            className="w-full border rounded p-2 text-sm mt-1" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="input-label">Type de société</label>
+            <select value={form.companyType} onChange={e => update('companyType', e.target.value)} className="select-field">
+              {companyTypes.map(c => <option key={c.value} value={c.value}>{c.label} ({c.rate})</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="input-label">Exercice fiscal</label>
+            <input type="number" value={form.fiscalYear} onChange={e => update('fiscalYear', +e.target.value)} className="input-field" />
+          </div>
+          <div>
+            <label className="input-label">Mois depuis création</label>
+            <input type="number" value={form.operatingMonths} onChange={e => update('operatingMonths', +e.target.value)} className="input-field" />
+            <p className="text-xs text-gray-400 mt-1">Exonération CM si ≤ 36 mois</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700">Subsidies (MAD)</label>
-          <input type="number" value={form.subsidies} onChange={e => update('subsidies', +e.target.value)}
-            className="w-full border rounded p-2 text-sm mt-1" />
+      <div className="card p-6 space-y-5">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Données financières</h2>
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700">Investment Agreement Amount (MAD)</label>
-          <input type="number" value={form.investmentAgreementAmount} onChange={e => update('investmentAgreementAmount', +e.target.value)}
-            className="w-full border rounded p-2 text-sm mt-1" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="input-label">Résultat net comptable</label>
+            <div className="relative">
+              <input type="number" value={form.netAccountingProfit} onChange={e => update('netAccountingProfit', +e.target.value)} className="input-field pr-16" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+            </div>
+          </div>
+          <div>
+            <label className="input-label">Chiffre d&apos;affaires total</label>
+            <div className="relative">
+              <input type="number" value={form.totalRevenue} onChange={e => update('totalRevenue', +e.target.value)} className="input-field pr-16" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+            </div>
+          </div>
+          <div>
+            <label className="input-label">Produits financiers</label>
+            <div className="relative">
+              <input type="number" value={form.financialIncome} onChange={e => update('financialIncome', +e.target.value)} className="input-field pr-16" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+            </div>
+          </div>
+          <div>
+            <label className="input-label">Subventions</label>
+            <div className="relative">
+              <input type="number" value={form.subsidies} onChange={e => update('subsidies', +e.target.value)} className="input-field pr-16" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+            </div>
+          </div>
+          <div>
+            <label className="input-label">Montant convention d&apos;investissement</label>
+            <div className="relative">
+              <input type="number" value={form.investmentAgreementAmount} onChange={e => update('investmentAgreementAmount', +e.target.value)} className="input-field pr-16" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+            </div>
+          </div>
         </div>
-        <div></div>
       </div>
 
-      <div className="mb-4 p-3 bg-gray-50 rounded text-sm">
-        <p className="text-xs text-gray-500 mb-1"><b>Réintégration active:</b> Vehicle cap excess — 20,000 MAD</p>
-        <p className="text-xs text-gray-400">Add more adjustments via the API (reintegrations[] / deductions[])</p>
+      {form.reintegrations.length > 0 && (
+        <div className="card p-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Réintégrations actives</h2>
+          </div>
+          <div className="space-y-2">
+            {form.reintegrations.map((r, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm p-3 bg-amber-50/50 rounded-xl">
+                <span className="badge-yellow">{r.category}</span>
+                <span className="text-gray-600 flex-1">{r.description}</span>
+                <span className="font-semibold text-gray-900">{r.amount.toLocaleString()} MAD</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <button onClick={calc} disabled={loading} className="btn-primary min-w-[160px]">
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              Calcul...
+            </span>
+          ) : 'Calculer IS'}
+        </button>
+        {result && <span className="text-xs text-gray-400">Dernier calcul effectué</span>}
       </div>
 
-      <button onClick={calc} disabled={loading}
-        className="px-8 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition">
-        {loading ? '⏳ Calculating...' : 'Calculate IS'}
-      </button>
-
-      {err && <p className="mt-2 text-red-600 text-sm">❌ {err}</p>}
+      {err && (
+        <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+          <p className="text-sm text-red-700 flex items-center gap-2">
+            <span>⚠️</span> {err}
+          </p>
+        </div>
+      )}
 
       {result && (
-        <div className="mt-6 border rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold mb-3">📊 IS Calculation — FY {form.fiscalYear}</h2>
-          <table className="w-full text-sm">
+        <div className="card divide-y divide-gray-50 overflow-hidden">
+          <div className="p-5 flex items-center justify-between bg-gradient-to-r from-blue-50/50 to-transparent">
+            <h3 className="font-semibold text-gray-900">Résultat IS — Exercice {form.fiscalYear}</h3>
+            <span className="text-xs text-gray-400">Taux appliqué: {result.rateLabel}</span>
+          </div>
+          <table className="result-table">
             <tbody>
               {[
-                ['Net Accounting Profit', result.netAccountingProfit],
-                ['Total Réintégrations', result.totalReintegrations],
-                ['Total Déductions', result.totalDeductions],
-                ['Net Taxable Profit (RNI)', result.netTaxableProfit, 'font-bold'],
-                ['Rate Applied', result.rateLabel],
-                ['Gross IS', result.grossIS],
-                ['MC Base', result.mcBase],
-                ['Minimum Contribution', result.mcAmount, result.mcExempt ? '(Exempt — startup)' : ''],
-                ['⚠ IS Due (max of Gross IS / MC)', result.isDue, 'font-bold'],
-                ['Loss Carry-Forward Applied', result.lossCarryForwardApplied],
-                ['✅ Net IS Payable', result.netISPayable, 'font-bold text-lg text-blue-700'],
-                ['Effective Tax Rate', `${result.effectiveRate}%`],
-              ].map(([l, v, extra]) => (
-                <tr key={l as string} className="border-b last:border-b-0">
-                  <td className={`py-1.5 pr-4 ${(extra as string || '').includes('text-lg') ? '' : 'text-gray-600'}`}>
-                    {l}
+                ['Résultat net comptable', result.netAccountingProfit],
+                ['Total réintégrations', result.totalReintegrations],
+                ['Total déductions', result.totalDeductions],
+                ['Résultat net fiscal (RNI)', result.netTaxableProfit, true],
+                ['Taux d\'imposition', `${(result.rateApplied * 100).toFixed(0)}%`, false, result.rateLabel],
+                ['IS brut', result.grossIS],
+              ].map(([l, v, bold, note]) => (
+                <tr key={l as string}>
+                  <td className={`text-gray-600 ${bold ? 'font-semibold text-gray-900' : ''}`}>{l}</td>
+                  <td className={`text-right font-mono ${bold ? 'font-bold text-gray-900' : 'text-gray-700'}`}>
+                    {typeof v === 'number' ? `${v.toLocaleString()} MAD` : v}
                   </td>
-                  <td className={`py-1.5 font-mono text-right ${extra as string || ''}`}>
-                    {typeof v === 'number' ? `${(v as number).toLocaleString()} MAD` : v}
-                  </td>
-                  <td className="py-1.5 text-gray-400 text-xs pl-2">{(extra as string || '').replace('font-bold', '').replace('text-lg', '').replace('text-blue-700', '') || ''}</td>
+                  {note && <td className="text-right text-xs text-gray-400 w-48">{note as string}</td>}
+                  {!note && <td className="w-48"></td>}
                 </tr>
               ))}
+              <tr className="bg-amber-50/50">
+                <td className="font-semibold text-gray-900">Base CM (CA + PF + Subventions)</td>
+                <td className="text-right font-mono font-semibold">{result.mcBase.toLocaleString()} MAD</td>
+                <td className="text-right text-xs text-gray-400">0.25%</td>
+              </tr>
+              <tr className={result.mcExempt ? 'bg-green-50/50' : ''}>
+                <td className="font-semibold">Cotisation minimale</td>
+                <td className="text-right font-mono font-semibold">{result.mcAmount.toLocaleString()} MAD</td>
+                <td className="text-right text-xs text-gray-400">{result.mcExempt ? '✅ Exonérée (startup ≤ 36 mois)' : 'min 3 000 MAD'}</td>
+              </tr>
+              <tr className="bg-blue-50/50">
+                <td className="font-bold text-gray-900">IS dû (max IS brut / CM)</td>
+                <td className="text-right font-bold font-mono text-blue-700">{result.isDue.toLocaleString()} MAD</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Report déficitaire appliqué</td>
+                <td className="text-right font-mono">{result.lossCarryForwardApplied.toLocaleString()} MAD</td>
+                <td></td>
+              </tr>
+              <tr className="bg-blue-50/50">
+                <td className="font-bold text-lg text-gray-900">IS net à payer</td>
+                <td className="text-right font-bold text-lg font-mono text-blue-700">{result.netISPayable.toLocaleString()} MAD</td>
+                <td className="text-right text-xs text-gray-400">Taux effectif: {result.effectiveRate}%</td>
+              </tr>
             </tbody>
           </table>
 
           {result.quarterlyInstallments?.length > 0 && (
-            <div className="mt-5 pt-3 border-t">
-              <h3 className="font-semibold text-sm mb-2">📅 Quarterly Installments</h3>
-              <div className="grid grid-cols-4 gap-3">
+            <div className="p-5 space-y-3">
+              <h4 className="text-sm font-semibold text-gray-700">Acomptes provisionnels</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {result.quarterlyInstallments.map((q: any) => (
-                  <div key={q.number} className="border rounded-lg p-3 text-center bg-blue-50">
-                    <div className="text-xs text-gray-500">Quarter {q.number}</div>
-                    <div className="text-xs text-gray-400">Due {q.dueDate}</div>
-                    <div className="font-bold text-blue-700 mt-1">{q.amount.toLocaleString()} MAD</div>
+                  <div key={q.number} className="border border-gray-100 rounded-xl p-4 text-center bg-gray-50/50 hover:bg-blue-50/50 transition-colors">
+                    <div className="text-xs text-gray-400 font-medium">Trimestre {q.number}</div>
+                    <div className="text-xs text-gray-400 mb-2">{q.dueDate}</div>
+                    <div className="text-lg font-bold text-blue-700">{q.amount.toLocaleString()} MAD</div>
                   </div>
                 ))}
               </div>
