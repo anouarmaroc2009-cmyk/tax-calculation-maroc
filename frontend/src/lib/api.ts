@@ -1,4 +1,4 @@
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+const API = '/api';
 
 async function post(path: string, data: any) {
   const res = await fetch(`${API}${path}`, {
@@ -11,22 +11,10 @@ async function post(path: string, data: any) {
 }
 
 export const api = {
-  is: {
-    calculate: (d: any) => post('/is/calculate', d),
-  },
-  ir: {
-    calculate: (d: any) => post('/ir/calculate', d),
-  },
-  tva: {
-    calculate: (d: any) => post('/tva/calculate', d),
-  },
-  classification: {
-    classify: (type: string, context: any) => post('/classification/classify', { type, context }),
-  },
-  optimization: {
-    run: (d: any) => post('/optimization/run', d),
-  },
-  penalties: {
-    calculate: (d: any) => post('/penalties/calculate', d),
-  },
+  is: { calculate: (d: any) => post('/is/calculate', d) },
+  ir: { calculate: (d: any) => post('/ir/calculate', d) },
+  tva: { calculate: (d: any) => post('/tva/calculate', d) },
+  classification: { classify: (type: string, context: any) => post('/classification/classify', { type, context }) },
+  optimization: { run: (d: any) => post('/optimization/run', d) },
+  penalties: { calculate: (d: any) => post('/penalties/calculate', d) },
 };

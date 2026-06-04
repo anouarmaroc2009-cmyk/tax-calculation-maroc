@@ -2,32 +2,32 @@
 
 Plateforme de calcul et d'optimisation fiscale pour experts-comptables marocains basée sur le **Code Général des Impôts (CGI) 2026** (Finance Law No. 50-25).
 
-## Quick Start
+## Utilisation
 
-**Prérequis:** [Node.js](https://nodejs.org) (v18+)
+**Prérequis:** [Node.js](https://nodejs.org) (v18+) — installer et c'est tout.
 
 ```bash
-# Clone
 git clone https://github.com/anouarmaroc2009-cmyk/tax-calculation-maroc.git
 cd tax-calculation-maroc
+```
 
-# Option 1: Script automatique (PowerShell)
-.\start.ps1
+### Double-clic (recommandé)
 
-# Option 2: Manuellement
-# Terminal 1 — Backend (API)
-cd backend
-npm install
-npx nest start --watch
-# → API sur http://localhost:4000
+Ouvrez **`run.bat`** — les deux serveurs démarrent automatiquement et le navigateur s'ouvre sur http://localhost:3000.
 
-# Terminal 2 — Frontend (UI)
-cd frontend
-npm install
-npm run dev
-# → UI sur http://localhost:3000
+### Manuel
 
-# Option 3: Docker
+```bash
+# Terminal 1 — Backend
+cd backend && npm install && npx nest start --watch
+
+# Terminal 2 — Frontend
+cd frontend && npm install && npm run dev
+```
+
+### Docker
+
+```bash
 docker-compose up -d
 ```
 
