@@ -1,7 +1,18 @@
 'use client';
-
 import { useState } from 'react';
 import { api } from '@/lib/api';
+
+const rateOpts = [
+  { value: 'STANDARD', label: '20% (Standard)' },
+  { value: 'REDUCED_ADD', label: '10% (Réduit)' },
+  { value: 'REDUCED_SDD', label: '0% (Export/SDD)' },
+  { value: 'EXEMPT_SDD', label: 'Exonéré' },
+];
+const purchOpts = [
+  { value: 'STANDARD', label: '20%' },
+  { value: 'REDUCED_ADD', label: '10%' },
+  { value: 'EXEMPT_SDD', label: 'Non déd.' },
+];
 
 export default function TVAPage() {
   const [form, setForm] = useState({
@@ -21,18 +32,6 @@ export default function TVAPage() {
     const copy = [...form.purchases]; copy[i] = { ...copy[i], [k]: v }; setForm(f => ({ ...f, purchases: copy }));
   };
 
-  const rateOptions = [
-    { value: 'STANDARD', label: '20% (Standard)' },
-    { value: 'REDUCED_ADD', label: '10% (Réduit additionnel)' },
-    { value: 'REDUCED_SDD', label: '0% (Export/SDD)' },
-    { value: 'EXEMPT_SDD', label: 'Exonéré' },
-  ];
-  const purchRateOptions = [
-    { value: 'STANDARD', label: '20% (Déductible)' },
-    { value: 'REDUCED_ADD', label: '10% (Déductible)' },
-    { value: 'EXEMPT_SDD', label: 'Non déductible' },
-  ];
-
   async function calc() {
     setLoading(true); setErr('');
     try { const res = await api.tva.calculate(form); setResult(res); }
@@ -41,149 +40,109 @@ export default function TVAPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center gap-4 mb-2">
-        <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-2xl">📊</div>
+    <div className="max-w-4xl mx-auto space-y-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-lg">📊</div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Taxe sur la Valeur Ajoutée (TVA)</h1>
-          <p className="text-sm text-gray-500">Régime post-réforme 2026 — Taux 20% / 10%</p>
+          <h1 className="text-xl font-bold text-gray-900">Taxe sur la Valeur Ajoutée (TVA)</h1>
+          <p className="text-sm text-gray-500">Régime post-réforme 2026 — 20% / 10%</p>
         </div>
       </div>
 
-      <div className="card p-6 space-y-5">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Période de déclaration</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <p className="text-xs font-semibold text-gray-600 uppercase">Période</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="input-label">Type de période</label>
-            <select value={form.periodType} onChange={e => setForm(f => ({ ...f, periodType: e.target.value }))} className="select-field">
+            <label className="block text-xs text-gray-500 mb-1">Type</label>
+            <select value={form.periodType} onChange={e => setForm(f => ({ ...f, periodType: e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
               <option value="MONTHLY">Mensuelle</option>
               <option value="QUARTERLY">Trimestrielle</option>
             </select>
           </div>
           <div>
-            <label className="input-label">Période n°</label>
-            <input type="number" min={1} max={12} value={form.periodNumber} onChange={e => setForm(f => ({ ...f, periodNumber: +e.target.value }))} className="input-field" />
+            <label className="block text-xs text-gray-500 mb-1">N° période</label>
+            <input type="number" value={form.periodNumber} onChange={e => setForm(f => ({ ...f, periodNumber: +e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
           </div>
           <div>
-            <label className="input-label">CA N-1 (pour déterminer fréquence)</label>
-            <div className="relative">
-              <input type="number" value={form.priorYearCA} onChange={e => setForm(f => ({ ...f, priorYearCA: +e.target.value }))} className="input-field pr-16" />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
-            </div>
+            <label className="block text-xs text-gray-500 mb-1">CA N-1</label>
+            <input type="number" value={form.priorYearCA} onChange={e => setForm(f => ({ ...f, priorYearCA: +e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Ventes</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+          <p className="text-xs font-semibold text-gray-600 uppercase">Ventes (HT)</p>
+          {form.sales.map((s, i) => (
+            <div key={i} className="flex gap-2">
+              <input type="number" value={s.ht} onChange={e => updSale(i, 'ht', +e.target.value)}
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Montant" />
+              <select value={s.rateCode} onChange={e => updSale(i, 'rateCode', e.target.value)}
+                className="w-32 border border-gray-300 rounded-lg px-2 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+                {rateOpts.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
             </div>
-            <span className="text-xs text-gray-400">HT</span>
-          </div>
-          <div className="space-y-2">
-            {form.sales.map((s, i) => (
-              <div key={i} className="flex gap-2">
-                <div className="relative flex-1">
-                  <input type="number" value={s.ht} onChange={e => updSale(i, 'ht', +e.target.value)} className="input-field pr-14" placeholder="Montant HT" />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
-                </div>
-                <select value={s.rateCode} onChange={e => updSale(i, 'rateCode', e.target.value)} className="select-field w-40">
-                  {rateOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                </select>
-              </div>
-            ))}
-          </div>
+          ))}
           <button onClick={() => setForm(f => ({ ...f, sales: [...f.sales, { ht: 0, rateCode: 'STANDARD' }] }))}
-            className="text-xs font-medium text-purple-600 hover:text-purple-700">+ Ajouter une vente</button>
+            className="text-xs text-purple-600 font-medium hover:text-purple-700">+ Ajouter</button>
         </div>
 
-        <div className="card p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Achats</h2>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+          <p className="text-xs font-semibold text-gray-600 uppercase">Achats (HT)</p>
+          {form.purchases.map((p, i) => (
+            <div key={i} className="flex gap-2">
+              <input type="number" value={p.ht} onChange={e => updPurch(i, 'ht', +e.target.value)}
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Montant" />
+              <select value={p.rateCode} onChange={e => updPurch(i, 'rateCode', e.target.value)}
+                className="w-24 border border-gray-300 rounded-lg px-2 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+                {purchOpts.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
             </div>
-            <span className="text-xs text-gray-400">HT</span>
-          </div>
-          <div className="space-y-2">
-            {form.purchases.map((p, i) => (
-              <div key={i} className="flex gap-2">
-                <div className="relative flex-1">
-                  <input type="number" value={p.ht} onChange={e => updPurch(i, 'ht', +e.target.value)} className="input-field pr-14" placeholder="Montant HT" />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
-                </div>
-                <select value={p.rateCode} onChange={e => updPurch(i, 'rateCode', e.target.value)} className="select-field w-40">
-                  {purchRateOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                </select>
-              </div>
-            ))}
-          </div>
+          ))}
           <button onClick={() => setForm(f => ({ ...f, purchases: [...f.purchases, { ht: 0, rateCode: 'STANDARD' }] }))}
-            className="text-xs font-medium text-purple-600 hover:text-purple-700">+ Ajouter un achat</button>
+            className="text-xs text-purple-600 font-medium hover:text-purple-700">+ Ajouter</button>
         </div>
       </div>
 
-      <div className="card p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Crédit antérieur</h2>
-        </div>
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <p className="text-xs font-semibold text-gray-600 uppercase mb-2">Crédit antérieur</p>
         <div className="relative max-w-xs">
-          <input type="number" value={form.priorCredit} onChange={e => setForm(f => ({ ...f, priorCredit: +e.target.value }))} className="input-field pr-16" placeholder="0" />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
+          <input type="number" value={form.priorCredit} onChange={e => setForm(f => ({ ...f, priorCredit: +e.target.value }))}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 pr-14" />
+          <span className="absolute right-3 top-2 text-xs text-gray-400">MAD</span>
         </div>
       </div>
 
-      <button onClick={calc} disabled={loading} className="btn-primary min-w-[160px]">
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            Calcul...
-          </span>
-        ) : 'Calculer TVA'}
+      <button onClick={calc} disabled={loading}
+        className="px-6 py-2.5 bg-purple-600 text-white rounded-lg font-medium text-sm hover:bg-purple-700 active:scale-[0.98] transition-all disabled:opacity-50">
+        {loading ? 'Calcul...' : 'Calculer TVA'}
       </button>
 
-      {err && (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-          <p className="text-sm text-red-700 flex items-center gap-2"><span>⚠️</span> {err}</p>
-        </div>
-      )}
+      {err && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">⚠️ {err}</div>}
 
       {result && (
-        <div className="card divide-y divide-gray-50 overflow-hidden">
-          <div className="p-5 flex items-center justify-between bg-gradient-to-r from-purple-50/50 to-transparent">
-            <h3 className="font-semibold text-gray-900">Résultat TVA</h3>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3 bg-gradient-to-r from-purple-50 to-white border-b border-gray-100 flex items-center justify-between">
+            <span className="font-semibold text-sm text-gray-900">Résultat TVA</span>
             <div className="flex items-center gap-3">
-              <span className="badge-blue">{result.filingFrequency}</span>
-              <span className="text-xs text-gray-400">Échéance: {result.deadline}</span>
+              <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-medium">{result.filingFrequency}</span>
+              <span className="text-xs text-gray-500">Échéance: {result.deadline}</span>
             </div>
           </div>
-          <table className="result-table">
+          <table className="w-full text-sm">
             <tbody>
-              <tr><td>TVA collectée (20%)</td><td className="text-right font-mono">{result.vatCollected?.standard?.toLocaleString()} MAD</td></tr>
-              <tr><td>TVA collectée (10%)</td><td className="text-right font-mono">{result.vatCollected?.reduced?.toLocaleString()} MAD</td></tr>
-              <tr className="border-b-2 border-gray-100">
-                <td className="font-semibold">Total TVA collectée</td>
-                <td className="text-right font-semibold font-mono">{result.vatCollected?.total?.toLocaleString()} MAD</td>
-              </tr>
-              <tr><td>TVA déductible</td><td className="text-right font-mono text-red-600">(-{result.vatDeductible?.toLocaleString()} MAD)</td></tr>
-              <tr><td>Crédit antérieur</td><td className="text-right font-mono text-red-600">(-{result.priorCredit?.toLocaleString()} MAD)</td></tr>
+              <tr className="border-b border-gray-50"><td className="py-2 px-4 text-gray-600">TVA collectée (20%)</td><td className="py-2 px-4 text-right font-mono">{result.vatCollected?.standard?.toLocaleString()} MAD</td></tr>
+              <tr className="border-b border-gray-50"><td className="py-2 px-4 text-gray-600">TVA collectée (10%)</td><td className="py-2 px-4 text-right font-mono">{result.vatCollected?.reduced?.toLocaleString()} MAD</td></tr>
+              <tr className="border-b border-gray-200"><td className="py-2 px-4 font-semibold">Total collectée</td><td className="py-2 px-4 text-right font-semibold font-mono">{result.vatCollected?.total?.toLocaleString()} MAD</td></tr>
+              <tr className="border-b border-gray-50"><td className="py-2 px-4 text-gray-600">TVA déductible</td><td className="py-2 px-4 text-right font-mono text-red-600">-{result.vatDeductible?.toLocaleString()} MAD</td></tr>
+              <tr className="border-b border-gray-50"><td className="py-2 px-4 text-gray-600">Crédit antérieur</td><td className="py-2 px-4 text-right font-mono text-red-600">-{result.priorCredit?.toLocaleString()} MAD</td></tr>
               {result.vatPayable > 0 ? (
-                <tr className="bg-red-50/50">
-                  <td className="font-bold text-lg text-gray-900">TVA à payer</td>
-                  <td className="text-right font-bold text-lg font-mono text-red-600">{result.vatPayable?.toLocaleString()} MAD</td>
-                </tr>
+                <tr className="bg-red-50"><td className="py-3 px-4 font-bold text-gray-900 text-base">TVA à payer</td><td className="py-3 px-4 text-right font-bold font-mono text-red-600 text-base">{result.vatPayable?.toLocaleString()} MAD</td></tr>
               ) : (
-                <tr className="bg-green-50/50">
-                  <td className="font-bold text-lg text-gray-900">Crédit de TVA (reportable)</td>
-                  <td className="text-right font-bold text-lg font-mono text-green-600">{result.vatCredit?.toLocaleString()} MAD</td>
-                </tr>
+                <tr className="bg-green-50"><td className="py-3 px-4 font-bold text-gray-900 text-base">Crédit reportable</td><td className="py-3 px-4 text-right font-bold font-mono text-green-600 text-base">{result.vatCredit?.toLocaleString()} MAD</td></tr>
               )}
             </tbody>
           </table>

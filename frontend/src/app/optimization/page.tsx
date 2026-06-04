@@ -1,17 +1,16 @@
 'use client';
-
 import { useState } from 'react';
 import { api } from '@/lib/api';
 
-const fieldMeta: Record<string, { label: string; type: 'number' | 'boolean'; hint?: string }> = {
-  dividendIncome: { label: 'Revenus de dividendes', type: 'number' },
-  isExport: { label: 'Activité exportatrice', type: 'boolean', hint: 'CFC/IAZ éligible' },
+const fields: Record<string, { label: string; type: 'number' | 'boolean'; hint?: string }> = {
+  dividendIncome: { label: 'Dividendes', type: 'number' },
+  isExport: { label: 'Exportatrice', type: 'boolean', hint: 'Éligible CFC/IAZ' },
   netProfit: { label: 'Bénéfice net', type: 'number' },
-  fixedAssets: { label: 'Immobilisations corporelles', type: 'number', hint: 'Base amortissable' },
-  hasLosses: { label: 'Déficits antérieurs', type: 'boolean' },
-  annualRevenue: { label: 'Chiffre d\'affaires annuel', type: 'number' },
-  directorSalary: { label: 'Salaire du dirigeant', type: 'number' },
-  directorDividends: { label: 'Dividendes du dirigeant', type: 'number' },
+  fixedAssets: { label: 'Immobilisations', type: 'number' },
+  hasLosses: { label: 'Déficits', type: 'boolean' },
+  annualRevenue: { label: 'CA annuel', type: 'number' },
+  directorSalary: { label: 'Salaire dirigeant', type: 'number' },
+  directorDividends: { label: 'Dividendes dirigeant', type: 'number' },
 };
 
 export default function OptimizationPage() {
@@ -31,105 +30,83 @@ export default function OptimizationPage() {
     finally { setLoading(false); }
   }
 
-  const riskColor = (r: string) => {
-    if (r === 'LOW') return 'bg-green-50 text-green-700 border-green-200';
-    if (r === 'MEDIUM') return 'bg-amber-50 text-amber-700 border-amber-200';
-    return 'bg-red-50 text-red-700 border-red-200';
-  };
+  const riskStyle = (r: string) => r === 'LOW' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700';
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-4 mb-2">
-        <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-2xl">⚡</div>
+    <div className="max-w-4xl mx-auto space-y-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-lg">⚡</div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Optimisation Fiscale</h1>
-          <p className="text-sm text-gray-500">Stratégies légales dans le cadre du CGI — classées par économies estimées</p>
+          <h1 className="text-xl font-bold text-gray-900">Optimisation Fiscale</h1>
+          <p className="text-sm text-gray-500">Stratégies légales classées par économies estimées</p>
         </div>
       </div>
 
-      <div className="card p-6 space-y-5">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Profil de l&apos;entreprise</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <p className="text-xs font-semibold text-gray-600 uppercase">Profil</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {Object.entries(profile).map(([k, v]) => {
-            const meta = fieldMeta[k];
-            return (
+            const meta = fields[k];
+            if (!meta) return null;
+            return meta.type === 'boolean' ? (
+              <div key={k} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <input type="checkbox" checked={!!v} onChange={e => setProfile(p => ({ ...p, [k]: e.target.checked }))}
+                  className="w-5 h-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                <label className="text-sm text-gray-700">{meta.label}</label>
+                {meta.hint && <span className="text-xs text-gray-400 ml-auto">{meta.hint}</span>}
+              </div>
+            ) : (
               <div key={k}>
-                <label className="input-label">{meta?.label || k}</label>
-                {meta?.type === 'boolean' ? (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50/50 rounded-xl">
-                    <input type="checkbox" checked={!!v}
-                      onChange={e => setProfile(p => ({ ...p, [k]: e.target.checked }))}
-                      className="w-5 h-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
-                    {meta.hint && <span className="text-xs text-gray-400">{meta.hint}</span>}
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <input type="number" value={v as number}
-                      onChange={e => setProfile(p => ({ ...p, [k]: +e.target.value }))}
-                      className="input-field pr-14" />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">MAD</span>
-                  </div>
-                )}
+                <label className="block text-xs text-gray-500 mb-1">{meta.label}</label>
+                <input type="number" value={v as number} onChange={e => setProfile(p => ({ ...p, [k]: +e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
               </div>
             );
           })}
         </div>
       </div>
 
-      <button onClick={run} disabled={loading} className="btn-primary min-w-[160px]">
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            Analyse...
-          </span>
-        ) : 'Lancer l\'optimisation'}
+      <button onClick={run} disabled={loading}
+        className="px-6 py-2.5 bg-orange-600 text-white rounded-lg font-medium text-sm hover:bg-orange-700 active:scale-[0.98] transition-all disabled:opacity-50">
+        {loading ? 'Analyse...' : 'Optimiser'}
       </button>
 
-      {err && (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-          <p className="text-sm text-red-700 flex items-center gap-2"><span>⚠️</span> {err}</p>
-        </div>
-      )}
+      {err && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">⚠️ {err}</div>}
 
       {result && (
-        <div className="card divide-y divide-gray-50 overflow-hidden">
-          <div className="p-5 flex items-center justify-between bg-gradient-to-r from-orange-50/50 to-transparent">
-            <h3 className="font-semibold text-gray-900">Recommandations</h3>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3 bg-gradient-to-r from-orange-50 to-white border-b border-gray-100 flex items-center justify-between">
+            <span className="font-semibold text-sm text-gray-900">Recommandations</span>
             <div className="text-right">
-              <div className="text-xs text-gray-400">Économies totales estimées</div>
-              <div className="text-2xl font-bold text-orange-600">{result.totalSavings.toLocaleString()} MAD</div>
+              <div className="text-xs text-gray-500">Économies totales</div>
+              <div className="text-xl font-bold text-orange-600">{result.totalSavings.toLocaleString()} MAD</div>
             </div>
           </div>
           <div className="p-5 space-y-3">
             {result.strategies?.map((s: any, i: number) => (
-              <div key={s.id} className={`p-4 rounded-xl border ${riskColor(s.risk)} flex items-center justify-between gap-4 ${
+              <div key={s.id} className={`p-4 rounded-lg border ${riskStyle(s.risk)} flex items-center justify-between gap-4 ${
                 i === 0 ? 'ring-2 ring-orange-300' : ''
               }`}>
                 <div className="flex items-center gap-3 min-w-0">
                   {i === 0 && <span className="text-lg">🏆</span>}
                   <div>
-                    <div className="font-medium text-gray-900">{s.name}</div>
+                    <div className="font-medium text-sm text-gray-900">{s.name}</div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="badge-blue text-xs">{s.tax}</span>
-                      <span className="badge text-xs border" style={{ borderColor: 'inherit' }}>{s.risk === 'LOW' ? 'Faible risque' : s.risk === 'MEDIUM' ? 'Risque modéré' : 'Risque élevé'}</span>
+                      <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">{s.tax}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${riskStyle(s.risk).split(' ')[2]}`}>{s.risk === 'LOW' ? 'Faible risque' : 'Risque modéré'}</span>
                       <span className="text-xs text-gray-400">{s.timeline}</span>
                     </div>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <div className="text-lg font-bold text-gray-900">{s.savings.toLocaleString()} MAD</div>
-                  <div className="text-xs text-gray-400">/ an</div>
+                <div className="text-right shrink-0 text-sm">
+                  <div className="font-bold text-gray-900">{s.savings.toLocaleString()} MAD</div>
+                  <div className="text-xs text-gray-400">/an</div>
                 </div>
               </div>
             ))}
             {(!result.strategies || result.strategies.length === 0) && (
-              <div className="text-center py-8 text-gray-400">
-                <div className="text-3xl mb-2">🤔</div>
+              <div className="text-center py-6 text-gray-400">
                 <p className="text-sm">Aucune stratégie disponible pour ce profil</p>
-                <p className="text-xs mt-1">Essayez de modifier les paramètres</p>
               </div>
             )}
           </div>

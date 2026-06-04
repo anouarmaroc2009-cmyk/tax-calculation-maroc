@@ -1,82 +1,63 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-
 const modules = [
-  { name: 'IS — Impôt sur les Sociétés', desc: 'Calculez l\'IS selon les taux 2026 (20%/35%/40%), la cotisation minimale (0.25%), les acomptes provisionnels et le report des déficits.', href: '/is', icon: '🏢', color: 'from-blue-500 to-blue-600', light: 'bg-blue-50 text-blue-600' },
-  { name: 'IR — Impôt sur le Revenu', desc: 'Barème progressif 0-38%, 6 catégories de revenus, abattement foncier, crédits de retenue à la source et calcul du RVI.', href: '/ir', icon: '👤', color: 'from-emerald-500 to-emerald-600', light: 'bg-emerald-50 text-emerald-600' },
-  { name: 'TVA — Taxe sur la Valeur Ajoutée', desc: 'Régime post-réforme 2026 (20%/10%), matrice de déduction, auto-liquidation, crédit de TVA et échéances mensuelles/trimestrielles.', href: '/tva', icon: '📊', color: 'from-purple-500 to-purple-600', light: 'bg-purple-50 text-purple-600' },
-  { name: 'Classification Actif/Passif', desc: 'Moteur de classification des revenus en actifs/passifs avec règles de reclassification pour valeurs mobilières, location et plus-values.', href: '/classification', icon: '🔍', color: 'from-amber-500 to-amber-600', light: 'bg-amber-50 text-amber-600' },
-  { name: 'Optimisation Fiscale', desc: '12 stratégies fiscales légales classées par économies estimées, niveaux de risque et délais de mise en œuvre.', href: '/optimization', icon: '⚡', color: 'from-orange-500 to-orange-600', light: 'bg-orange-50 text-orange-600' },
-  { name: 'Calcul des Pénalités', desc: 'Pénalités de retard Article 208 (5%/10%/20%), intérêts de retard 0.5%/mois et majorations pour défaut de déclaration.', href: '/penalties', icon: '⚠️', color: 'from-red-500 to-red-600', light: 'bg-red-50 text-red-600' },
+  { name: 'IS — Impôt sur les Sociétés', desc: 'Taux 2026 (20%/35%/40%), cotisation minimale, acomptes provisionnels, report des déficits.', href: '/is', emoji: '🏢', color: 'border-blue-200 hover:border-blue-400', badge: 'bg-blue-100 text-blue-700' },
+  { name: 'IR — Impôt sur le Revenu', desc: 'Barème progressif 0-38%, 6 catégories, abattement foncier 40%, crédits RAS, réduction famille.', href: '/ir', emoji: '👤', color: 'border-emerald-200 hover:border-emerald-400', badge: 'bg-emerald-100 text-emerald-700' },
+  { name: 'TVA — Taxe sur la Valeur Ajoutée', desc: 'Taux 20%/10%, matrice de déduction, crédit de TVA, échéances mensuelles/trimestrielles.', href: '/tva', emoji: '📊', color: 'border-purple-200 hover:border-purple-400', badge: 'bg-purple-100 text-purple-700' },
+  { name: 'Classification Actif/Passif', desc: '6 types de revenus, règles de reclassification pour trader, professionnel, portefeuille, biens.', href: '/classification', emoji: '🔍', color: 'border-amber-200 hover:border-amber-400', badge: 'bg-amber-100 text-amber-700' },
+  { name: 'Optimisation Fiscale', desc: 'Stratégies classées par économies estimées, niveaux de risque et délais de mise en œuvre.', href: '/optimization', emoji: '⚡', color: 'border-orange-200 hover:border-orange-400', badge: 'bg-orange-100 text-orange-700' },
+  { name: 'Pénalités Art. 208', desc: 'Pénalités de retard 5%/10%/20%, intérêts 0.5%/mois, calcul des majorations.', href: '/penalties', emoji: '⚠️', color: 'border-red-200 hover:border-red-400', badge: 'bg-red-100 text-red-700' },
 ];
 
 export default function HomePage() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
-    <div className="space-y-10">
-      <div className="text-center max-w-2xl mx-auto pt-6 pb-4">
-        <div className="inline-flex items-center gap-2 bg-blue-50 rounded-full px-4 py-1.5 mb-6">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-          <span className="text-xs font-medium text-blue-700">Code Général des Impôts 2026 — Finance Law No. 50-25</span>
+    <div className="space-y-8 max-w-5xl mx-auto">
+      <div className="text-center pt-8 pb-4">
+        <div className="inline-flex items-center gap-2 bg-blue-50 rounded-full px-4 py-1.5 mb-4">
+          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+          <span className="text-xs font-medium text-blue-700">Code Général des Impôts 2026</span>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
-          FiscalPro <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">Maroc</span>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+          FiscalPro <span className="text-blue-600">Maroc</span>
         </h1>
-        <p className="text-lg text-gray-500 leading-relaxed">
-          Plateforme de calcul et d&apos;optimisation fiscale pour experts-comptables marocains
-        </p>
+        <p className="text-base text-gray-500">Calcul et optimisation fiscale pour experts-comptables marocains</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {modules.map((m, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {modules.map(m => (
           <a key={m.name} href={m.href}
-            className="group card-hover p-6 relative overflow-hidden"
-            style={mounted ? { animationDelay: `${i * 80}ms` } : undefined}>
-            <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -translate-y-1/2 translate-x-1/2 opacity-5 bg-gradient-to-br ${m.color}`}></div>
-            <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-xl ${m.light} flex items-center justify-center text-xl shrink-0`}>
-                {m.icon}
+            className={`block bg-white rounded-xl border-2 ${m.color} p-5 shadow-sm hover:shadow-md transition-all`}>
+            <div className="flex items-start gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 ${m.badge}`}>
+                {m.emoji}
               </div>
-              <div className="min-w-0">
-                <h2 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{m.name}</h2>
-                <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{m.desc}</p>
+              <div>
+                <h2 className="font-semibold text-sm text-gray-900">{m.name}</h2>
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{m.desc}</p>
               </div>
-            </div>
-            <div className="mt-4 flex items-center text-xs font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span>Accéder au calculateur</span>
-              <svg className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/></svg>
             </div>
           </a>
         ))}
       </div>
 
-      <div className="card p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-          <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl shrink-0">🚀</div>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-gray-900 mb-1">Démarrage rapide</h3>
-            <p className="text-sm text-gray-500">Clonez le dépôt et lancez avec Docker</p>
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">🚀</div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm text-gray-900">Démarrage rapide</p>
+            <p className="text-xs text-gray-500">Clonez et exécutez les deux serveurs</p>
           </div>
-          <div className="w-full sm:w-auto">
-            <div className="bg-gray-900 rounded-xl p-3 overflow-x-auto">
-              <code className="text-xs text-gray-100 whitespace-nowrap">git clone ... &amp;&amp; cd tax-calculation-maroc &amp;&amp; docker-compose up -d</code>
-            </div>
-          </div>
+          <pre className="bg-gray-900 text-gray-100 px-4 py-2 rounded-lg text-xs overflow-x-auto w-full sm:w-auto">.\start.ps1</pre>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { n: '6', l: 'Moteurs de calcul', c: 'bg-blue-50 text-blue-600' },
-          { n: '28+', l: 'Tables base de données', c: 'bg-emerald-50 text-emerald-600' },
-          { n: '2026', l: 'CGI à jour', c: 'bg-purple-50 text-purple-600' },
-          { n: '12', l: 'Stratégies d\'optimisation', c: 'bg-amber-50 text-amber-600' },
+          { n: '6', l: 'Moteurs de calcul', c: 'text-blue-600' },
+          { n: '2026', l: 'CGI à jour', c: 'text-emerald-600' },
+          { n: '12', l: 'Stratégies', c: 'text-amber-600' },
+          { n: '28+', l: 'Tables BDD', c: 'text-purple-600' },
         ].map(s => (
-          <div key={s.l} className="card p-4 text-center">
-            <div className={`text-2xl font-bold ${s.c.split(' ')[1]}`}>{s.n}</div>
+          <div key={s.l} className="bg-white rounded-xl border border-gray-200 p-3 text-center">
+            <div className={`text-xl font-bold ${s.c}`}>{s.n}</div>
             <div className="text-xs text-gray-500 mt-1">{s.l}</div>
           </div>
         ))}
