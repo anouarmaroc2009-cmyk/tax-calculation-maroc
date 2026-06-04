@@ -16,11 +16,15 @@ export class CorporateIncomeTaxEngine {
     const lossApplied = this.applyLossCF(isDue, input.priorYearLosses || [], input.fiscalYear);
     const netISPayable = Math.max(0, isDue - lossApplied);
 
-    const installments = [1, 2, 3, 4].map(n => ({
-      number: n,
-      dueDate: `${input.fiscalYear}-${String(n * 3).padStart(2, '0')}-31`,
-      amount: Math.round(netISPayable / 4 * 100) / 100,
-    }));
+    const lastDay = (y: number, m: number) => new Date(y, m, 0).getDate();
+    const installments = [1, 2, 3, 4].map(n => {
+      const m = n * 3;
+      return {
+        number: n,
+        dueDate: `${input.fiscalYear}-${String(m).padStart(2, '0')}-${lastDay(input.fiscalYear, m)}`,
+        amount: Math.round(netISPayable / 4 * 100) / 100,
+      };
+    });
 
     return {
       netAccountingProfit,

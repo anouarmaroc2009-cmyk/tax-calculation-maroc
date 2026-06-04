@@ -26,8 +26,11 @@ export class VATEngine {
   }
 
   private getDeadline(type: string, num: number): string {
-    // Simplified: return month 20th
-    return `2026-${String(num + 1).padStart(2, '0')}-20`;
+    const now = new Date();
+    let year = now.getFullYear();
+    let month = type === 'MONTHLY' ? num + 1 : num * 3 + 1;
+    if (month > 12) { year++; month -= 12; }
+    return `${year}-${String(month).padStart(2, '0')}-20`;
   }
 }
 

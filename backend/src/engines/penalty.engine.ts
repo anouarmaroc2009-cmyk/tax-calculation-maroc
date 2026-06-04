@@ -9,7 +9,7 @@ export class PenaltyEngine {
         penalty = input.taxAmount * (isVAT ? 0.05 : 0.05);
       } else {
         penalty = input.taxAmount * (isVAT ? 0.20 : 0.10);
-        interest = input.taxAmount * 0.05; // first month
+        interest = input.taxAmount * 0.005; // first month
         const extraMonths = Math.ceil(daysLate / 30) - 1;
         if (extraMonths > 0) interest += input.taxAmount * 0.005 * extraMonths;
       }
