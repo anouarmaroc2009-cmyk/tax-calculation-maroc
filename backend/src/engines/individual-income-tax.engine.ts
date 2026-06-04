@@ -12,12 +12,6 @@ export class IndividualIncomeTaxEngine {
     const categories: IRCategoryResult[] = [];
 
     // Cat 1: Salaries
-    const salaryTotal = (input.salaries || []).reduce((s, sal) => {
-      const net = sal.gross - sal.cnss - sal.amo - sal.pension - sal.otherDeductions;
-      const profExp = Math.min(net * 0.20, 30_000);
-      return s + { gross: sal.gross, deductions: sal.cnss + sal.amo + sal.pension + sal.otherDeductions + profExp, net: net - profExp, wht: 0 };
-    }, { gross: 0, deductions: 0, net: 0, wht: 0 });
-    // Actually compute properly:
     let cat1Gross = 0, cat1Ded = 0, cat1Net = 0, cat1WHT = 0;
     for (const sal of (input.salaries || [])) {
       const beforeProf = sal.gross - sal.cnss - sal.amo - sal.pension - sal.otherDeductions;

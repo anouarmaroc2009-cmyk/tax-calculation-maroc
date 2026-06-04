@@ -31,7 +31,7 @@ export default function OptimizationPage() {
             {typeof v === 'boolean' ? (
               <input type="checkbox" checked={v} onChange={e => setProfile(p => ({ ...p, [k]: e.target.checked }))} className="ml-2" />
             ) : (
-              <input type="number" value={v} onChange={e => setProfile(p => ({ ...p, [k]: +e.value }))}
+              <input type="number" value={v} onChange={e => setProfile(p => ({ ...p, [k]: +e.target.value }))}
                 className="w-full border rounded p-1 text-sm" />
             )}
           </div>

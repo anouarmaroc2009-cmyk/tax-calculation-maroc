@@ -2,7 +2,7 @@ export class OptimizationEngine {
   run(profile: OptProfile): OptReport {
     const strategies = [
       { id: 'S1', name: 'Holding Company Structure', tax: 'IS', savings: profile.dividendIncome ? profile.dividendIncome * 0.20 : 0, risk: 'LOW' as const, timeline: '3-6 months' },
-      { id: 'S2', name: 'CFC/IAZ Regime', tax: 'IS', savings: profile.isExport ? profile.netProfit * 0.15 : 0, risk: 'LOW' as const, timeline: '6-12 months' },
+      { id: 'S2', name: 'CFC/IAZ Regime', tax: 'IS', savings: profile.isExport ? (profile.netProfit || 0) * 0.15 : 0, risk: 'LOW' as const, timeline: '6-12 months' },
       { id: 'S6', name: 'Declining-Balance Depreciation', tax: 'IS', savings: (profile.fixedAssets || 0) * 0.02, risk: 'LOW' as const, timeline: 'Immediate' },
       { id: 'S8', name: 'Loss Carry-Forward Preservation', tax: 'IS', savings: profile.hasLosses ? (profile.netProfit || 0) * 0.10 : 0, risk: 'LOW' as const, timeline: 'Immediate' },
       { id: 'S9', name: 'Salary vs Dividend Mix', tax: 'IS/IR', savings: this.salDivSavings(profile), risk: 'MEDIUM' as const, timeline: '1-3 months' },

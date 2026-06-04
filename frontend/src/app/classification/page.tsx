@@ -21,16 +21,18 @@ export default function ClassifyPage() {
       <div className="space-y-3 mb-6">
         <div><label className="text-xs font-medium">Income Type</label>
           <select value={type} onChange={e => setType(e.target.value)}
-            className="w-full border rounded p-2 text-sm">SALARY, PROFESSIONAL, DIVIDEND, INTEREST, RENTAL, CAPITAL_GAIN.split(',').map(t => <option key={t} value={t}>{t}</option>)</select></div>
+            className="w-full border rounded p-2 text-sm">
+            {['SALARY','PROFESSIONAL','DIVIDEND','INTEREST','RENTAL','CAPITAL_GAIN'].map(t => <option key={t} value={t}>{t}</option>)}
+          </select></div>
         <div><label className="text-xs font-medium">Is Securities Trader?</label>
           <input type="checkbox" checked={context.isSecuritiesTrader} onChange={e => setContext(c => ({ ...c, isSecuritiesTrader: e.target.checked }))} className="ml-2" /></div>
         <div><label className="text-xs font-medium">Is Professional?</label>
           <input type="checkbox" checked={context.isProfessional} onChange={e => setContext(c => ({ ...c, isProfessional: e.target.checked }))} className="ml-2" /></div>
         <div><label className="text-xs font-medium">Number of Rental Properties</label>
-          <input type="number" value={context.numProperties} onChange={e => setContext(c => ({ ...c, numProperties: +e.value }))}
+          <input type="number" value={context.numProperties} onChange={e => setContext(c => ({ ...c, numProperties: +e.target.value }))}
             className="w-full border rounded p-2 text-sm" /></div>
         <div><label className="text-xs font-medium">Portfolio Mgmt Hours/Year</label>
-          <input type="number" value={context.portfolioHours} onChange={e => setContext(c => ({ ...c, portfolioHours: +e.value }))}
+          <input type="number" value={context.portfolioHours} onChange={e => setContext(c => ({ ...c, portfolioHours: +e.target.value }))}
             className="w-full border rounded p-2 text-sm" /></div>
       </div>
 

@@ -21,9 +21,11 @@ export default function PenaltiesPage() {
       <div className="space-y-3 mb-6">
         <div><label className="text-xs font-medium">Tax Type</label>
           <select value={form.taxType} onChange={e => setForm(f => ({ ...f, taxType: e.target.value }))}
-            className="w-full border rounded p-2 text-sm">IS, IR, TVA, WHT.split(',').map(t => <option key={t} value={t}>{t}</option>)</select></div>
+            className="w-full border rounded p-2 text-sm">
+            {['IS','IR','TVA','WHT'].map(t => <option key={t} value={t}>{t}</option>)}
+          </select></div>
         <div><label className="text-xs font-medium">Tax Amount (MAD)</label>
-          <input type="number" value={form.taxAmount} onChange={e => setForm(f => ({ ...f, taxAmount: +e.value }))}
+          <input type="number" value={form.taxAmount} onChange={e => setForm(f => ({ ...f, taxAmount: +e.target.value }))}
             className="w-full border rounded p-2 text-sm" /></div>
         <div><label className="text-xs font-medium">Due Date</label>
           <input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))}

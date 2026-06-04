@@ -40,7 +40,7 @@ export default function TVAPage() {
           <h2 className="font-semibold text-sm mb-2">Sales (HT — MAD)</h2>
           {form.sales.map((s, i) => (
             <div key={i} className="flex gap-2 mb-1">
-              <input type="number" value={s.ht} onChange={e => updSale(i, 'ht', +e.value)}
+              <input type="number" value={s.ht} onChange={e => updSale(i, 'ht', +e.target.value)}
                 className="flex-1 border rounded p-1 text-sm" placeholder="Amount" />
               <select value={s.rateCode} onChange={e => updSale(i, 'rateCode', e.target.value)}
                 className="w-32 border rounded p-1 text-sm">
@@ -56,7 +56,7 @@ export default function TVAPage() {
           <h2 className="font-semibold text-sm mb-2">Purchases (HT — MAD)</h2>
           {form.purchases.map((p, i) => (
             <div key={i} className="flex gap-2 mb-1">
-              <input type="number" value={p.ht} onChange={e => updPurch(i, 'ht', +e.value)}
+              <input type="number" value={p.ht} onChange={e => updPurch(i, 'ht', +e.target.value)}
                 className="flex-1 border rounded p-1 text-sm" placeholder="Amount" />
               <select value={p.rateCode} onChange={e => updPurch(i, 'rateCode', e.target.value)}
                 className="w-32 border rounded p-1 text-sm">
@@ -71,10 +71,10 @@ export default function TVAPage() {
 
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div><label className="text-xs font-medium">Prior Credit (MAD)</label>
-          <input type="number" value={form.priorCredit} onChange={e => setForm(f => ({ ...f, priorCredit: +e.value }))}
+          <input type="number" value={form.priorCredit} onChange={e => setForm(f => ({ ...f, priorCredit: +e.target.value }))}
             className="w-full border rounded p-2 text-sm" /></div>
         <div><label className="text-xs font-medium">Prior Year CA (MAD) — determines filing frequency</label>
-          <input type="number" value={form.priorYearCA} onChange={e => setForm(f => ({ ...f, priorYearCA: +e.value }))}
+          <input type="number" value={form.priorYearCA} onChange={e => setForm(f => ({ ...f, priorYearCA: +e.target.value }))}
             className="w-full border rounded p-2 text-sm" /></div>
       </div>
 
