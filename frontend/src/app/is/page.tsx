@@ -1,121 +1,161 @@
 'use client';
+
 import { useState } from 'react';
+import { api } from '@/lib/api';
 
-type CompanyType = 'STANDARD' | 'CREDIT_INSTITUTION' | 'INSURANCE' | 'CFC' | 'IAZ' | 'INVESTMENT_AGREEMENT' | 'MICROFINANCE';
-
-interface FormData {
-  netAccountingProfit: number;
-  totalRevenue: number;
-  financialIncome: number;
-  subsidies: number;
-  companyType: CompanyType;
-  operatingMonths: number;
-  investmentAgreementAmount: number;
-  reintegrations: number;
-  deductions: number;
-}
-
-interface Result {
-  netTaxableProfit: number;
-  rateApplied: number;
-  grossIS: number;
-  mcAmount: number;
-  isDue: number;
-  netISPayable: number;
-  effectiveTaxRate: number;
+interface Form {
+  fiscalYear: number; companyType: string; netAccountingProfit: number; totalRevenue: number;
+  financialIncome: number; subsidies: number; operatingMonths: number; investmentAgreementAmount: number;
+  reintegrations: { type: string; category: string; description: string; amount: number }[];
+  deductions: { type: string; category: string; description: string; amount: number }[];
+  priorYearLosses: { originYear: number; type: string; remaining: number }[];
 }
 
 export default function ISPage() {
-  const [form, setForm] = useState<FormData>({
-    netAccountingProfit: 500000, totalRevenue: 3000000, financialIncome: 50000,
-    subsidies: 0, companyType: 'STANDARD', operatingMonths: 48,
-    investmentAgreementAmount: 0, reintegrations: 20000, deductions: 10000,
+  const [form, setForm] = useState<Form>({
+    fiscalYear: 2026, companyType: 'STANDARD', netAccountingProfit: 500000, totalRevenue: 3000000,
+    financialIncome: 50000, subsidies: 0, operatingMonths: 48, investmentAgreementAmount: 0,
+    reintegrations: [{ type: 'REINTEGRATION', category: 'vehicle', description: 'Vehicle cap excess', amount: 20000 }],
+    deductions: [], priorYearLosses: [],
   });
-  const [result, setResult] = useState<Result | null>(null);
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
 
-  function calculate() {
-    const netTaxableProfit = form.netAccountingProfit + form.reintegrations - form.deductions;
-    let rate = 0.20;
-    if (form.companyType === 'CREDIT_INSTITUTION' || form.companyType === 'INSURANCE') rate = 0.40;
-    else if (form.companyType === 'CFC' || form.companyType === 'IAZ') rate = 0.20;
-    else if (form.companyType === 'INVESTMENT_AGREEMENT' && form.investmentAgreementAmount >= 1_500_000_000) rate = 0.20;
-    else if (form.companyType === 'MICROFINANCE') rate = netTaxableProfit >= 100_000_000 ? 0.35 : 0.20;
-    else if (netTaxableProfit >= 100_000_000) rate = 0.35;
+  const update = (k: keyof Form, v: any) => setForm(f => ({ ...f, [k]: v }));
 
-    const grossIS = Math.max(0, netTaxableProfit * rate);
-    const mcBase = form.totalRevenue + form.financialIncome + form.subsidies;
-    const mcAmount = form.operatingMonths <= 36 ? 0 : Math.max(mcBase * 0.0025, 3000);
-    const isDue = Math.max(grossIS, mcAmount);
-    const netISPayable = isDue;
-
-    setResult({ netTaxableProfit, rateApplied: rate, grossIS, mcAmount, isDue, netISPayable, effectiveTaxRate: netISPayable / (netTaxableProfit || 1) });
+  async function calc() {
+    setLoading(true); setErr('');
+    try { const res = await api.is.calculate(form); setResult(res); }
+    catch (e: any) { setErr(e.message); }
+    finally { setLoading(false); }
   }
 
-  const update = (k: keyof FormData, v: any) => setForm(f => ({ ...f, [k]: v }));
+  const companyTypes = [
+    { value: 'STANDARD', label: 'Standard (20% or 35%)' },
+    { value: 'CREDIT_INSTITUTION', label: 'Credit Institution / Insurance (40%)' },
+    { value: 'CFC', label: 'CFC Company (20% flat)' },
+    { value: 'IAZ', label: 'IAZ Company (20% flat)' },
+    { value: 'INVESTMENT_AGREEMENT', label: 'Investment Agreement ≥ 1.5B (20%)' },
+  ];
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <h1 className="mb-6 text-2xl font-bold">Corporate Income Tax (IS) Calculator</h1>
-      <p className="mb-4 text-sm text-gray-500">CGI Art. 19-I — 2026 final rates</p>
+    <div className="mx-auto max-w-4xl p-6">
+      <h1 className="text-2xl font-bold mb-2">Corporate Income Tax (IS) Calculator</h1>
+      <p className="text-sm text-gray-500 mb-6">CGI Art. 19-I — 2026 final proportional rates</p>
 
-      <div className="mb-6 grid grid-cols-2 gap-4">
-        {[
-          { k: 'netAccountingProfit', l: 'Net Accounting Profit (MAD)', t: 'number' },
-          { k: 'totalRevenue', l: 'Total Revenue (MAD)', t: 'number' },
-          { k: 'financialIncome', l: 'Financial Income (MAD)', t: 'number' },
-          { k: 'subsidies', l: 'Subsidies (MAD)', t: 'number' },
-          { k: 'reintegrations', l: 'Réintégrations (MAD)', t: 'number' },
-          { k: 'deductions', l: 'Déductions (MAD)', t: 'number' },
-          { k: 'operatingMonths', l: 'Months Since Startup', t: 'number' },
-          { k: 'investmentAgreementAmount', l: 'Investment Agreement (MAD)', t: 'number' },
-        ].map(f => (
-          <div key={f.k}>
-            <label className="block text-sm font-medium text-gray-700">{f.l}</label>
-            <input type={f.t} value={(form as any)[f.k]} onChange={e => update(f.k as keyof FormData, parseFloat(e.target.value) || 0)}
-              className="mt-1 w-full rounded border p-2 text-sm" />
-          </div>
-        ))}
+      <div className="grid grid-cols-3 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Company Type</label>
+          <label className="block text-xs font-medium text-gray-700">Company Type</label>
           <select value={form.companyType} onChange={e => update('companyType', e.target.value)}
-            className="mt-1 w-full rounded border p-2 text-sm">
-            <option value="STANDARD">Standard</option>
-            <option value="CREDIT_INSTITUTION">Credit Institution / Insurance</option>
-            <option value="CFC">CFC Company</option>
-            <option value="IAZ">IAZ Company</option>
-            <option value="INVESTMENT_AGREEMENT">Investment Agreement ≥ 1.5B</option>
-            <option value="MICROFINANCE">Microfinance (Transition)</option>
+            className="w-full border rounded p-2 text-sm mt-1">
+            {companyTypes.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700">Fiscal Year</label>
+          <input type="number" value={form.fiscalYear} onChange={e => update('fiscalYear', +e.target.value)}
+            className="w-full border rounded p-2 text-sm mt-1" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700">Months Since Startup (MC exemption: ≤ 36)</label>
+          <input type="number" value={form.operatingMonths} onChange={e => update('operatingMonths', +e.target.value)}
+            className="w-full border rounded p-2 text-sm mt-1" />
         </div>
       </div>
 
-      <button onClick={calculate} className="rounded bg-blue-600 px-6 py-2 text-white hover:bg-blue-700">
-        Calculate IS
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-700">Net Accounting Profit (MAD)</label>
+          <input type="number" value={form.netAccountingProfit} onChange={e => update('netAccountingProfit', +e.target.value)}
+            className="w-full border rounded p-2 text-sm mt-1" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700">Total Revenue (MAD)</label>
+          <input type="number" value={form.totalRevenue} onChange={e => update('totalRevenue', +e.target.value)}
+            className="w-full border rounded p-2 text-sm mt-1" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700">Financial Income (MAD)</label>
+          <input type="number" value={form.financialIncome} onChange={e => update('financialIncome', +e.target.value)}
+            className="w-full border rounded p-2 text-sm mt-1" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-700">Subsidies (MAD)</label>
+          <input type="number" value={form.subsidies} onChange={e => update('subsidies', +e.target.value)}
+            className="w-full border rounded p-2 text-sm mt-1" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700">Investment Agreement Amount (MAD)</label>
+          <input type="number" value={form.investmentAgreementAmount} onChange={e => update('investmentAgreementAmount', +e.target.value)}
+            className="w-full border rounded p-2 text-sm mt-1" />
+        </div>
+        <div></div>
+      </div>
+
+      <div className="mb-4 p-3 bg-gray-50 rounded text-sm">
+        <p className="text-xs text-gray-500 mb-1"><b>Réintégration active:</b> Vehicle cap excess — 20,000 MAD</p>
+        <p className="text-xs text-gray-400">Add more adjustments via the API (reintegrations[] / deductions[])</p>
+      </div>
+
+      <button onClick={calc} disabled={loading}
+        className="px-8 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition">
+        {loading ? '⏳ Calculating...' : 'Calculate IS'}
       </button>
 
+      {err && <p className="mt-2 text-red-600 text-sm">❌ {err}</p>}
+
       {result && (
-        <div className="mt-6 rounded-lg border bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Results — FY 2026</h2>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <ResultRow label="Net Taxable Profit" value={result.netTaxableProfit} />
-            <ResultRow label="Rate Applied" value={`${(result.rateApplied * 100).toFixed(1)}%`} />
-            <ResultRow label="Gross IS" value={result.grossIS} />
-            <ResultRow label="Minimum Contribution" value={result.mcAmount} />
-            <ResultRow label="IS Due (max)" value={result.isDue} bold />
-            <ResultRow label="Net IS Payable" value={result.netISPayable} bold />
-            <ResultRow label="Effective Tax Rate" value={`${(result.effectiveTaxRate * 100).toFixed(2)}%`} />
-          </div>
+        <div className="mt-6 border rounded-lg bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-3">📊 IS Calculation — FY {form.fiscalYear}</h2>
+          <table className="w-full text-sm">
+            <tbody>
+              {[
+                ['Net Accounting Profit', result.netAccountingProfit],
+                ['Total Réintégrations', result.totalReintegrations],
+                ['Total Déductions', result.totalDeductions],
+                ['Net Taxable Profit (RNI)', result.netTaxableProfit, 'font-bold'],
+                ['Rate Applied', result.rateLabel],
+                ['Gross IS', result.grossIS],
+                ['MC Base', result.mcBase],
+                ['Minimum Contribution', result.mcAmount, result.mcExempt ? '(Exempt — startup)' : ''],
+                ['⚠ IS Due (max of Gross IS / MC)', result.isDue, 'font-bold'],
+                ['Loss Carry-Forward Applied', result.lossCarryForwardApplied],
+                ['✅ Net IS Payable', result.netISPayable, 'font-bold text-lg text-blue-700'],
+                ['Effective Tax Rate', `${result.effectiveRate}%`],
+              ].map(([l, v, extra]) => (
+                <tr key={l as string} className="border-b last:border-b-0">
+                  <td className={`py-1.5 pr-4 ${(extra as string || '').includes('text-lg') ? '' : 'text-gray-600'}`}>
+                    {l}
+                  </td>
+                  <td className={`py-1.5 font-mono text-right ${extra as string || ''}`}>
+                    {typeof v === 'number' ? `${(v as number).toLocaleString()} MAD` : v}
+                  </td>
+                  <td className="py-1.5 text-gray-400 text-xs pl-2">{(extra as string || '').replace('font-bold', '').replace('text-lg', '').replace('text-blue-700', '') || ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {result.quarterlyInstallments?.length > 0 && (
+            <div className="mt-5 pt-3 border-t">
+              <h3 className="font-semibold text-sm mb-2">📅 Quarterly Installments</h3>
+              <div className="grid grid-cols-4 gap-3">
+                {result.quarterlyInstallments.map((q: any) => (
+                  <div key={q.number} className="border rounded-lg p-3 text-center bg-blue-50">
+                    <div className="text-xs text-gray-500">Quarter {q.number}</div>
+                    <div className="text-xs text-gray-400">Due {q.dueDate}</div>
+                    <div className="font-bold text-blue-700 mt-1">{q.amount.toLocaleString()} MAD</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
-    </div>
-  );
-}
-
-function ResultRow({ label, value, bold }: { label: string; value: number | string; bold?: boolean }) {
-  return (
-    <div className={`flex justify-between border-b py-1 ${bold ? 'font-semibold' : ''}`}>
-      <span>{label}</span>
-      <span>{typeof value === 'number' ? `${value.toLocaleString()} MAD` : value}</span>
     </div>
   );
 }

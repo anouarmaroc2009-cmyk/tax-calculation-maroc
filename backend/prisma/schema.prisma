@@ -1,0 +1,71 @@
+// Prisma schema for FiscalPro Maroc
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Firm {
+  id        String   @id @default(uuid())
+  name      String
+  ice       String?
+  if_       String?
+  phone     String?
+  email     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clients  Client[]
+  users    User[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  role         String   @default("accountant")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  firm  Firm  @relation(fields: [firmId], references: [id])
+  firmId String
+}
+
+model Client {
+  id          String   @id @default(uuid())
+  clientType  String
+  entityName  String?
+  ice         String?
+  if_         String?
+  cin         String?
+  rc          String?
+  fiscalRegime String?
+  vatSubject  Boolean  @default(false)
+  phone       String?
+  email       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  firm        Firm     @relation(fields: [firmId], references: [id])
+  firmId      String
+  fiscalYears FiscalYear[]
+}
+
+model FiscalYear {
+  id        String   @id @default(uuid())
+  year      Int
+  dateStart DateTime
+  dateEnd   DateTime
+  status    String   @default("draft")
+
+  client   Client @relation(fields: [clientId], references: [id])
+  clientId String
+
+  @@unique([clientId, year])
+}

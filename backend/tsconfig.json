@@ -13,13 +13,6 @@
     "incremental": true,
     "skipLibCheck": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@engines/*": ["src/engines/*"],
-      "@services/*": ["src/services/*"],
-      "@models/*": ["src/models/*"],
-      "@config/*": ["src/config/*"]
-    }
+    "forceConsistentCasingInFileNames": true
   }
 }
